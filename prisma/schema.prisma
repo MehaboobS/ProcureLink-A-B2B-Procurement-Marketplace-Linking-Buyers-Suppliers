@@ -1,0 +1,188 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+//////////////////////////////////////
+// ENUMS
+//////////////////////////////////////
+
+enum Role {
+  BUYER
+  SUPPLIER
+}
+
+enum EntityType {
+  INDIVIDUAL
+  SMALL_BUSINESS
+  COMPANY
+}
+
+enum SupplierType {
+  MANUFACTURER
+  TRADER
+  IMPORTER
+  DISTRIBUTOR
+}
+
+enum KycStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+enum Tier {
+  FREE
+  STARTER
+  GROWTH
+  ENTERPRISE
+}
+
+//////////////////////////////////////
+// USER
+//////////////////////////////////////
+
+model User {
+  id            String   @id @default(uuid())
+
+  email         String   @unique
+  phone         String?  @unique
+
+  passwordHash  String
+
+  role          Role
+  entityType    EntityType
+
+  isVerified    Boolean  @default(false)
+
+  kycStatus     KycStatus @default(PENDING)
+  tier          Tier @default(FREE)
+
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  //////////////////////////////////////
+  // RELATIONS
+  //////////////////////////////////////
+
+  buyerProfile    BuyerProfile?
+  supplierProfile SupplierProfile?
+
+  @@index([email])
+  @@index([role])
+}
+
+//////////////////////////////////////
+// BUYER PROFILE
+//////////////////////////////////////
+
+model BuyerProfile {
+  id        String @id @default(uuid())
+  userId    String @unique
+  user      User   @relation(fields: [userId], references: [id])
+
+  companyName String?
+  location    String?
+
+  // KYC DOCUMENTS
+  aadhaar   String?
+  pan       String?
+  gst       String?
+  cin       String?
+  moa       String?
+  workOrder String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+//////////////////////////////////////
+// SUPPLIER PROFILE
+//////////////////////////////////////
+
+model SupplierProfile {
+  id        String @id @default(uuid())
+  userId    String @unique
+  user      User   @relation(fields: [userId], references: [id])
+
+  supplierType    SupplierType
+  companyName     String
+  gst             String
+  location        String
+  yearEstablished Int
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  categories     SupplierCategory[]
+  products       Product[]
+  certifications Certification[]
+}
+
+//////////////////////////////////////
+// CATEGORY
+//////////////////////////////////////
+
+model Category {
+  id   String @id @default(uuid())
+  name String
+  slug String @unique
+
+  supplierCategories SupplierCategory[]
+}
+
+//////////////////////////////////////
+// SUPPLIER CATEGORY (MANY-TO-MANY)
+//////////////////////////////////////
+
+model SupplierCategory {
+  id          String @id @default(uuid())
+  supplierId  String
+  categoryId  String
+
+  supplier SupplierProfile @relation(fields: [supplierId], references: [id])
+  category Category        @relation(fields: [categoryId], references: [id])
+
+  @@index([supplierId])
+  @@index([categoryId])
+  @@unique([supplierId, categoryId])
+}
+
+//////////////////////////////////////
+// PRODUCT
+//////////////////////////////////////
+
+model Product {
+  id          String @id @default(uuid())
+  supplierId  String
+
+  name        String
+  specs       String
+  moq         Int
+  leadTime    Int
+  supplyArea  String
+
+  supplier SupplierProfile @relation(fields: [supplierId], references: [id])
+
+  @@index([supplierId])
+}
+
+//////////////////////////////////////
+// CERTIFICATION
+//////////////////////////////////////
+
+model Certification {
+  id          String @id @default(uuid())
+  supplierId  String
+
+  name        String
+  documentUrl String?
+
+  supplier SupplierProfile @relation(fields: [supplierId], references: [id])
+
+  @@index([supplierId])
+}
