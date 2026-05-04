@@ -135,7 +135,7 @@ export async function GET(req: NextRequest) {
 export async function POST(req: NextRequest) {
   try {
     const userData = verifyToken(req);
-
+    console.log("Authenticated user data:", userData);
     // Only suppliers can create products
     if (userData.role !== "SUPPLIER") {
       return NextResponse.json(
@@ -148,7 +148,7 @@ export async function POST(req: NextRequest) {
 
     // Validate required fields
     const { name, specs, moq, leadTime, supplyArea } = body;
-
+    console.log("Received product data:", { name, specs, moq, leadTime, supplyArea });
     if (!name || !specs || moq === undefined || leadTime === undefined || !supplyArea) {
       return NextResponse.json(
         { error: "Missing required fields: name, specs, moq, leadTime, supplyArea" },
@@ -161,9 +161,11 @@ export async function POST(req: NextRequest) {
       where: { userId: userData.id }
     });
 
+    console.log("Supplier profile found:", supplierProfile);
+
     if (!supplierProfile) {
       return NextResponse.json(
-        { error: "Supplier profile not found" },
+        { error: "Supplier profile not complete! Please complete your profile before adding products." },
         { status: 404 }
       );
     }

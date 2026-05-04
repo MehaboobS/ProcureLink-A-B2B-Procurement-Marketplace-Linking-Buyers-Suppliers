@@ -1,21 +1,25 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { redis } from '@/lib/redis';
 import { prisma } from '@/lib/prisma';
 import jwt from 'jsonwebtoken';
+import { deleteOtpValue, getOtpValue, normalizeOtpValue } from '@/lib/upstash-redis';
 
 export async function POST(req: NextRequest) {
   try {
     const { email, otp } = await req.json();
     console.log("Received OTP verification request for email:", email);
+    console.log("Provided OTP:", otp);
 
     // Validate input
     if (!email || !otp) {
       return NextResponse.json({ error: 'Email and OTP required' }, { status: 400 });
     }
 
-    const storedOtp = await redis.get(`otp:${email}`);
+    const storedOtp = await getOtpValue(email);
+    console.log("Stored OTP for email:", email, "is", storedOtp); 
 
-    if (!storedOtp || storedOtp !== otp) {
+    const providedOtp = normalizeOtpValue(otp);
+
+    if (!storedOtp || storedOtp !== providedOtp) {
       if (!storedOtp) {
         return NextResponse.json({ error: 'OTP expired or not found. Please register again.' }, { status: 400 });
       }
@@ -23,7 +27,7 @@ export async function POST(req: NextRequest) {
     }
 
     // OTP verified → delete it
-    await redis.del(`otp:${email}`);
+    await deleteOtpValue(email);
 
     const user = await prisma.user.findUnique({
       where: { email }

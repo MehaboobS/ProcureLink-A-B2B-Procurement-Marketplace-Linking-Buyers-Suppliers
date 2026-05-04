@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { redis } from '@/lib/redis';
 import { prisma } from '@/lib/prisma';
+import { setOtpValue } from '@/lib/upstash-redis';
 
 export async function POST(req: NextRequest) {
   try {
@@ -18,7 +18,7 @@ export async function POST(req: NextRequest) {
 
     const otp = Math.floor(100000 + Math.random() * 900000).toString();
 
-    await redis.set(`otp:${email}`, otp, 'EX', 300);
+    await setOtpValue(email, otp);
 
     console.log('Resent OTP:', otp);
 
