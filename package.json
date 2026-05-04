@@ -10,6 +10,7 @@
   },
   "dependencies": {
     "@prisma/client": "^6.19.3",
+    "@radix-ui/react-popover": "^1.1.15",
     "bcryptjs": "^3.0.3",
     "bullmq": "^5.76.4",
     "class-variance-authority": "^0.7.1",
@@ -44,6 +45,10 @@
     "postcss": "^8.5.13",
     "prettier": "^3.8.3",
     "tailwindcss": "^4.2.4",
+    "ts-node": "^10.9.2",
     "typescript": "^5"
+  },
+  "prisma": {
+    "seed": "ts-node prisma/seed.ts"
   }
 }
