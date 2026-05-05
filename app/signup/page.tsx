@@ -1,7 +1,7 @@
 "use client";
 
-import { useState } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { Eye, EyeOff, Mail, Lock } from "lucide-react";
 
@@ -15,16 +15,24 @@ import { apiFetch } from "@/lib/api";
 
 export default function SignupPage() {
   const router = useRouter();
-  const searchParams = useSearchParams();
-  const defaultRole = (searchParams.get("role") || "BUYER").toUpperCase();
 
   const [form, setForm] = useState({
     email: "",
     password: "",
     confirmPassword: "",
-    role: defaultRole,
+    role: "BUYER",
     entityType: "INDIVIDUAL",
   });
+
+  useEffect(() => {
+    try {
+      const sp = new URLSearchParams(window.location.search);
+      const roleParam = (sp.get("role") || "BUYER").toUpperCase();
+      setForm((f) => ({ ...f, role: roleParam }));
+    } catch (e) {
+      // ignore in non-browser contexts
+    }
+  }, []);
 
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");

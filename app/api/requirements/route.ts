@@ -19,7 +19,7 @@ export async function POST(req: NextRequest) {
     const parsed = requirementSchema.safeParse(body);
 
     if (!parsed.success) {
-      console.error("Requirement validation failed:", parsed.error.errors);
+      console.error("Requirement validation failed:", parsed.error);
       return NextResponse.json({
         error: "Validation failed",
         details: parsed.error.flatten()
@@ -41,10 +41,22 @@ export async function POST(req: NextRequest) {
 
     const requirement = await prisma.requirement.create({
       data: {
-        ...data,
+        title: data.title,
+        description: data.description,
+        categoryId: data.categoryId,
         buyerId: user.id,
+        quantity: Number(data.quantity),
+        unit: data.unit,
+        deliveryLocation: data.deliveryLocation,
         deliveryDeadline: new Date(data.deliveryDeadline),
+        budgetMin: data.budgetMin ?? null,
+        budgetMax: data.budgetMax ?? null,
+        budgetHidden: data.budgetHidden ?? false,
         closingDatetime: new Date(data.closingDatetime),
+        biddingMode: data.biddingMode,
+        visibility: data.visibility,
+        specDocumentUrl: data.specDocumentUrl ?? null,
+        tags: data.tags ?? [],
       },
     });
 

@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { Clock, Shield } from "lucide-react";
 
@@ -17,10 +17,17 @@ const RESEND_SECONDS = 60;
 
 export default function VerifyOtpPage() {
   const router = useRouter();
-  const params = useSearchParams();
+  const [email, setEmail] = useState("");
   const inputRefs = useRef<Array<HTMLInputElement | null>>([]);
 
-  const email = params.get("email") || "";
+  useEffect(() => {
+    try {
+      const sp = new URLSearchParams(window.location.search);
+      setEmail(sp.get("email") || "");
+    } catch (e) {
+      // ignore on server
+    }
+  }, []);
 
   const [digits, setDigits] = useState<string[]>(Array.from({ length: OTP_LENGTH }, () => ""));
   const [loading, setLoading] = useState(false);
