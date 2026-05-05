@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import type { Requirement, User, Category } from "@prisma/client";
 import { verifyToken } from "@/lib/auth";
 import { requirementSchema } from "@/lib/validators/requirement";
 import { getBuyerBadge } from "@/lib/utils/badge";
@@ -126,7 +125,7 @@ export async function GET(req: NextRequest) {
       orderBy: { createdAt: "desc" }
     });
 
-    const data = requirements.map((r: Requirement & { buyer: User; category: Category }) => ({
+    const data = requirements.map((r) => ({
       ...r,
       buyerBadge: getBuyerBadge(r.buyer.kycStatus, r.buyer.tier)
     }));
