@@ -28,11 +28,6 @@ export default function DashboardLayout({
         {/* Top Bar */}
         <TopBar />
 
-        {/* Mobile Header */}
-        <div className="md:hidden border-b border-slate-200 bg-white">
-          <Sidebar />
-        </div>
-
         {/* Main Content */}
         <main className="flex-1 overflow-auto">
           {children}
