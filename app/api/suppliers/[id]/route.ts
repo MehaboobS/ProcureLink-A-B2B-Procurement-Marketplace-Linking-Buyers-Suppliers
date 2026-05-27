@@ -60,21 +60,21 @@ export async function GET(
       },
 
       // Categories
-      categories: supplier.supplierProfile.categories.map((sc) => ({
+      categories: supplier.supplierProfile.categories.map((sc: any) => ({
         id: sc.category.id,
         name: sc.category.name,
         slug: sc.category.slug
       })),
 
       // Certifications
-      certifications: supplier.supplierProfile.certifications.map((cert) => ({
+      certifications: supplier.supplierProfile.certifications.map((cert: any) => ({
         id: cert.id,
         name: cert.name,
         documentUrl: cert.documentUrl
       })),
 
       // Products
-      products: supplier.supplierProfile.products.map((product) => ({
+      products: supplier.supplierProfile.products.map((product: any) => ({
         id: product.id,
         name: product.name,
         specs: product.specs,
