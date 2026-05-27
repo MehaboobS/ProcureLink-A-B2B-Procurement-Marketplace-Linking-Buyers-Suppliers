@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { verifyToken } from '@/lib/auth';
 
+const FALLBACK_SUPPLIER_TYPE = 'DISTRIBUTOR';
+
 export async function GET(req: NextRequest) {
   try {
     const userData = verifyToken(req);
@@ -74,28 +76,47 @@ export async function PUT(req: NextRequest) {
     // SUPPLIER
     // ======================
     if (userData.role === 'SUPPLIER') {
-      const updated = await prisma.supplierProfile.upsert({
-        where: { userId: userData.id },
+      const supplierType = body.supplierType || 'MANUFACTURER';
 
-        update: {
-          companyName: body.companyName,
-          location: body.location,
-          gst: body.gst,
-          yearEstablished: body.yearEstablished,
-          supplierType: body.supplierType
-        },
+      const upsertSupplierProfile = async (resolvedSupplierType: string) => {
+        return prisma.supplierProfile.upsert({
+          where: { userId: userData.id },
 
-        create: {
-          userId: userData.id,
-          companyName: body.companyName,
-          location: body.location,
-          gst: body.gst,
-          yearEstablished: body.yearEstablished,
-          supplierType: body.supplierType || 'MANUFACTURER'
+          update: {
+            companyName: body.companyName,
+            location: body.location,
+            gst: body.gst,
+            yearEstablished: body.yearEstablished,
+            supplierType: resolvedSupplierType as any
+          },
+
+          create: {
+            userId: userData.id,
+            companyName: body.companyName,
+            location: body.location,
+            gst: body.gst,
+            yearEstablished: body.yearEstablished,
+            supplierType: resolvedSupplierType as any
+          }
+        });
+      };
+
+      try {
+        const updated = await upsertSupplierProfile(supplierType);
+        return NextResponse.json(updated);
+      } catch (err: any) {
+        const isSupplierTypeMismatch =
+          typeof err?.message === 'string' &&
+          err.message.includes('Invalid value for argument `supplierType`') &&
+          supplierType === 'SERVICE_PROVIDER';
+
+        if (!isSupplierTypeMismatch) {
+          throw err;
         }
-      });
 
-      return NextResponse.json(updated);
+        const updated = await upsertSupplierProfile(FALLBACK_SUPPLIER_TYPE);
+        return NextResponse.json(updated);
+      }
     }
 
     return NextResponse.json({ error: "Invalid role" }, { status: 400 });
