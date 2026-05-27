@@ -1,16 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
-import { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 import { verifyToken } from "@/lib/auth";
 import { requirementSchema } from "@/lib/validators/requirement";
 import { getBuyerBadge } from "@/lib/utils/badge";
-
-type RequirementWithRelations = Prisma.RequirementGetPayload<{
-  include: {
-    buyer: true;
-    category: true;
-  };
-}>;
 
 // =====================
 // CREATE REQUIREMENT
@@ -122,7 +114,7 @@ export async function GET(req: NextRequest) {
       };
     }
 
-    const requirements: RequirementWithRelations[] = await prisma.requirement.findMany({
+    const requirements = await prisma.requirement.findMany({
       where,
       skip,
       take: limit,
@@ -133,7 +125,7 @@ export async function GET(req: NextRequest) {
       orderBy: { createdAt: "desc" }
     });
 
-    const data = requirements.map((r: any) => ({
+    const data = requirements.map((r) => ({
       ...r,
       buyerBadge: getBuyerBadge(r.buyer.kycStatus, r.buyer.tier)
     }));
