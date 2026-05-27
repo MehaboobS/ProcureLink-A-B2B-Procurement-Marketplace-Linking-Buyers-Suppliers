@@ -4,6 +4,16 @@ import { verifyToken } from "@/lib/auth";
 import { requirementSchema } from "@/lib/validators/requirement";
 import { getBuyerBadge } from "@/lib/utils/badge";
 
+type RequirementWithRelations = Awaited<
+  ReturnType<typeof prisma.requirement.findMany>
+>[number] & {
+  buyer: {
+    kycStatus: string;
+    tier: string;
+  };
+  category: unknown;
+};
+
 // =====================
 // CREATE REQUIREMENT
 // =====================
@@ -114,7 +124,7 @@ export async function GET(req: NextRequest) {
       };
     }
 
-    const requirements = await prisma.requirement.findMany({
+    const requirements = (await prisma.requirement.findMany({
       where,
       skip,
       take: limit,
@@ -123,9 +133,9 @@ export async function GET(req: NextRequest) {
         category: true
       },
       orderBy: { createdAt: "desc" }
-    });
+    })) as RequirementWithRelations[];
 
-    const data = requirements.map((r) => ({
+    const data = requirements.map((r: RequirementWithRelations) => ({
       ...r,
       buyerBadge: getBuyerBadge(r.buyer.kycStatus, r.buyer.tier)
     }));
