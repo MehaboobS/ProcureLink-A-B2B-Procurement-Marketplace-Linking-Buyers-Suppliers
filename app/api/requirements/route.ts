@@ -125,7 +125,7 @@ export async function GET(req: NextRequest) {
       orderBy: { createdAt: "desc" }
     });
 
-    const data = requirements.map((r) => ({
+    const data = requirements.map((r: any) => ({
       ...r,
       buyerBadge: getBuyerBadge(r.buyer.kycStatus, r.buyer.tier)
     }));
