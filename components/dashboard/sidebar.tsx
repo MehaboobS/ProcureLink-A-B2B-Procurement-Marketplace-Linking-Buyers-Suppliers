@@ -2,9 +2,8 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
-import { Menu, LayoutDashboard, FileText, MessageSquare, User, LogOut } from "lucide-react";
+import { LayoutDashboard, FileText, MessageSquare, User, LogOut } from "lucide-react";
 import { useState, useEffect } from "react";
 import { apiFetch } from "@/lib/api";
 
@@ -28,7 +27,6 @@ const supplierNavItems = [
 
 export function Sidebar() {
   const pathname = usePathname();
-  const [open, setOpen] = useState(false);
   const [role, setRole] = useState<"BUYER" | "SUPPLIER" | null>(null);
   const [loading, setLoading] = useState(true);
 
@@ -58,7 +56,6 @@ export function Sidebar() {
             <Button
               variant={isActive ? "default" : "ghost"}
               className="w-full justify-start gap-2 rounded-lg"
-              onClick={() => setOpen(false)}
             >
               <Icon className="h-4 w-4" />
               {item.label}
@@ -72,7 +69,6 @@ export function Sidebar() {
         <Button
           variant="ghost"
           className="w-full justify-start gap-2 rounded-lg"
-          onClick={() => setOpen(false)}
         >
           <FileText className="h-4 w-4" />
           {role === "SUPPLIER" ? "View My Catalog" : "View Catalogs"}
@@ -101,7 +97,6 @@ export function Sidebar() {
 
   return (
     <>
-      {/* Desktop Sidebar */}
       <aside className="hidden md:flex flex-col w-64 border-r border-slate-200 bg-white px-4 py-6">
         <div className="mb-8">
           <Link href="/dashboard">
@@ -110,23 +105,6 @@ export function Sidebar() {
         </div>
         <NavContent />
       </aside>
-
-      {/* Mobile Menu */}
-      <div className="md:hidden flex items-center px-4 py-3 border-b border-slate-200 bg-white">
-        <Sheet open={open} onOpenChange={setOpen}>
-          <SheetTrigger asChild>
-            <Button variant="ghost" size="icon">
-              <Menu className="h-5 w-5" />
-            </Button>
-          </SheetTrigger>
-          <SheetContent side="left" className="w-64">
-            <div className="mb-8">
-              <h1 className="text-2xl font-bold text-[#2563EB]">ProcureLink</h1>
-            </div>
-            <NavContent />
-          </SheetContent>
-        </Sheet>
-      </div>
     </>
   );
 }
