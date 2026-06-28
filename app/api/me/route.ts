@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { verifyToken } from '@/lib/auth';
+import { KycStatus } from "@prisma/client";
 
 const FALLBACK_SUPPLIER_TYPE = 'DISTRIBUTOR';
 
@@ -34,7 +35,7 @@ export async function PUT(req: NextRequest) {
   try {
     const userData = verifyToken(req);
     const body = await req.json();
-
+    
     console.log("User:", userData);
     console.log("Body:", body);
 
@@ -103,6 +104,14 @@ export async function PUT(req: NextRequest) {
 
       try {
         const updated = await upsertSupplierProfile(supplierType);
+        await prisma.user.update({
+  where: {
+    id: userData.id
+  },
+  data: {
+    kycStatus: KycStatus.APPROVED
+  }
+});
         return NextResponse.json(updated);
       } catch (err: any) {
         const isSupplierTypeMismatch =

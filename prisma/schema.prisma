@@ -22,6 +22,8 @@ model User {
   buyerProfile    BuyerProfile?
   requirements    Requirement[]
   supplierProfile SupplierProfile?
+  bids Bid[]
+  
 
   @@index([email])
   @@index([role])
@@ -129,11 +131,40 @@ model Requirement {
   tags             String[]
   createdAt        DateTime @default(now())
   updatedAt        DateTime @updatedAt
+
   buyer            User     @relation(fields: [buyerId], references: [id])
   category         Category @relation(fields: [categoryId], references: [id])
 
+  // New Relation
+  bids             Bid[]
+
   @@index([categoryId])
   @@index([buyerId])
+}
+model Bid {
+
+  id              String      @id @default(uuid())
+
+  requirementId   String
+  supplierId      String
+
+  quotedPrice     Float
+  quantity        Int
+  deliveryDays    Int
+  remarks         String?
+
+  status          BidStatus   @default(PENDING)
+
+  rejectionReason String?
+
+  createdAt       DateTime    @default(now())
+  updatedAt       DateTime    @updatedAt
+
+  requirement Requirement @relation(fields: [requirementId], references: [id], onDelete: Cascade)
+
+  supplier User @relation(fields: [supplierId], references: [id], onDelete: Cascade)
+
+  @@unique([requirementId, supplierId])
 }
 
 enum Role {
@@ -165,4 +196,12 @@ enum Tier {
   STARTER
   GROWTH
   ENTERPRISE
+}
+
+
+enum BidStatus {
+  PENDING
+  SHORTLISTED
+  ACCEPTED
+  REJECTED
 }
