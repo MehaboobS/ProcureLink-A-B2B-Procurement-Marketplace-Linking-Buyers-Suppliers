@@ -40,6 +40,8 @@ export default function RequirementDetailPage() {
   const id = params?.id as string;
 
   const [requirement, setRequirement] = useState<RequirementDetail | null>(null);
+  const [role, setRole] = useState<"BUYER" | "SUPPLIER" | null>(null);
+const [kycStatus, setKycStatus] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
@@ -52,7 +54,10 @@ export default function RequirementDetailPage() {
           router.push("/signin");
           return;
         }
+        const currentUser = await apiFetch("/api/me");
 
+        setRole(currentUser.role);
+        setKycStatus(currentUser.kycStatus);
         const data = await apiFetch(`/api/requirements/${id}`);
         setRequirement(data);
       } catch (err: any) {
@@ -133,23 +138,46 @@ export default function RequirementDetailPage() {
 
       {/* Header */}
       <div className="mb-8">
-        <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
-          <div>
-            <h1 className="text-3xl font-bold text-slate-900">{requirement.title}</h1>
-            <div className="flex flex-wrap gap-3 mt-3">
-              <Badge className={getStatusColor(requirement.status)}>
-                {requirement.status}
-              </Badge>
-              <Badge className={getBiddingColor(requirement.biddingMode)}>
-                {requirement.biddingMode}
-              </Badge>
-              {requirement.visibility && (
-                <Badge variant="outline">{requirement.visibility}</Badge>
-              )}
-            </div>
-          </div>
-        </div>
+  <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
+
+    <div>
+      <h1 className="text-3xl font-bold text-slate-900">
+        {requirement.title}
+      </h1>
+
+      <div className="flex flex-wrap gap-3 mt-3">
+        <Badge className={getStatusColor(requirement.status)}>
+          {requirement.status}
+        </Badge>
+
+        <Badge className={getBiddingColor(requirement.biddingMode)}>
+          {requirement.biddingMode}
+        </Badge>
+
+        {requirement.visibility && (
+          <Badge variant="outline">
+            {requirement.visibility}
+          </Badge>
+        )}
       </div>
+    </div>
+
+    {role === "SUPPLIER" && (
+      <Button
+        disabled={kycStatus !== "APPROVED"}
+        onClick={() =>
+          router.push(`/requirements/${requirement.id}/bid`)
+        }
+        className="bg-[#2563EB] text-white"
+      >
+        {kycStatus === "APPROVED"
+          ? "Raise Bid"
+          : "Complete KYC to Bid"}
+      </Button>
+    )}
+
+  </div>
+</div>
 
       {/* Main Content */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
